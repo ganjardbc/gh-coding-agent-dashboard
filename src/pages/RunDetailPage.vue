@@ -15,14 +15,14 @@ onMounted(() => fetchRun(file))
 </script>
 
 <template>
-  <div class="p-6 max-w-4xl">
-    <!-- Header -->
-    <div class="flex items-center gap-3 mb-5">
-      <RouterLink to="/runs" class="text-slate-400 hover:text-slate-600 text-sm transition-colors">
+  <div class="p-4 sm:p-6">
+    <!-- Breadcrumb -->
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-5">
+      <RouterLink to="/runs" class="text-slate-400 hover:text-slate-600 text-sm transition-colors flex-shrink-0">
         ← Runs
       </RouterLink>
       <span class="text-slate-300">/</span>
-      <span class="font-mono text-xs text-slate-500">{{ file }}</span>
+      <span class="font-mono text-xs text-slate-500 break-all">{{ file }}</span>
     </div>
 
     <LoadingState v-if="loading" />

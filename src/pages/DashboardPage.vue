@@ -18,9 +18,9 @@ onMounted(refresh)
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl">
+  <div class="p-4 sm:p-6">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 gap-2">
       <div>
         <h1 class="text-xl font-semibold text-slate-800">Overview</h1>
         <p class="text-xs text-slate-500 mt-0.5">System status and recent activity</p>

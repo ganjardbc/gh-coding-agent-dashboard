@@ -45,21 +45,20 @@ onMounted(async () => {
   }
 })
 
-// Cast job to RunData shape for RunViewer (shapes are compatible)
 function asRunData(j: JobDetail): RunData {
   return j as unknown as RunData
 }
 </script>
 
 <template>
-  <div class="p-6 max-w-4xl">
-    <!-- Header -->
-    <div class="flex items-center gap-3 mb-5">
-      <RouterLink to="/jobs" class="text-slate-400 hover:text-slate-600 text-sm transition-colors">
+  <div class="p-4 sm:p-6">
+    <!-- Breadcrumb -->
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-5">
+      <RouterLink to="/jobs" class="text-slate-400 hover:text-slate-600 text-sm transition-colors flex-shrink-0">
         ← Jobs
       </RouterLink>
       <span class="text-slate-300">/</span>
-      <span class="font-mono text-xs text-slate-500">{{ runId }}</span>
+      <span class="font-mono text-xs text-slate-500 break-all">{{ runId }}</span>
       <StatusBadge v-if="job" :status="job.status" />
     </div>
 
@@ -68,13 +67,13 @@ function asRunData(j: JobDetail): RunData {
 
     <template v-else-if="job">
       <!-- Actions bar -->
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div class="text-xs text-slate-500">
           Created {{ fmtTime(job.createdAt) }}
           <span v-if="job.retryCount" class="ml-2 text-amber-600">· {{ job.retryCount }} retries</span>
           <span v-if="job.status === 'queued' || job.status === 'running'" class="ml-2 text-amber-500">· polling…</span>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-shrink-0">
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 transition-colors"
             @click="fetchJob(runId)"
@@ -91,12 +90,12 @@ function asRunData(j: JobDetail): RunData {
       </div>
 
       <!-- Linked run file -->
-      <div v-if="job.jobId" class="mb-4 bg-blue-50 border border-blue-200 rounded p-3 flex items-center gap-2 text-xs">
+      <div v-if="job.jobId" class="mb-4 bg-blue-50 border border-blue-200 rounded p-3 flex flex-wrap items-center gap-2 text-xs">
         <span class="text-blue-600">Queue Job:</span>
-        <code class="font-mono text-blue-800">{{ job.jobId }}</code>
+        <code class="font-mono text-blue-800 break-all">{{ job.jobId }}</code>
       </div>
 
-      <!-- Run viewer (shared with /runs/:file) -->
+      <!-- Run viewer -->
       <RunViewer :run="asRunData(job)" />
     </template>
   </div>

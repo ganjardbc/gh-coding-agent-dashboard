@@ -23,7 +23,7 @@ function toggleCmd(idx: number) {
     <!-- Metadata -->
     <div class="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
       <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Metadata</h3>
-      <dl class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
         <div>
           <dt class="text-xs text-slate-400">ID</dt>
           <dd class="font-mono text-xs text-slate-700 break-all">{{ run.id }}</dd>

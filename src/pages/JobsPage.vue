@@ -14,7 +14,7 @@ const statuses: Array<{ value: JobStatus | 'all'; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'queued', label: 'Queued' },
   { value: 'running', label: 'Running' },
-  { value: 'success', label: 'Completed' },
+  { value: 'success', label: 'Done' },
   { value: 'failed', label: 'Failed' },
 ]
 
@@ -42,9 +42,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl">
+  <div class="p-4 sm:p-6">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4 gap-2">
       <div>
         <h1 class="text-xl font-semibold text-slate-800">Jobs</h1>
         <p class="text-xs text-slate-500 mt-0.5">
@@ -53,34 +53,33 @@ onUnmounted(() => {
         </p>
       </div>
       <button
-        class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 transition-colors"
+        class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 transition-colors"
         @click="fetch"
       >
         ↻ Refresh
       </button>
     </div>
 
-    <!-- Filter tabs -->
-    <div class="flex gap-1 mb-4 bg-white border border-slate-200 rounded-lg p-1 w-fit">
-      <button
-        v-for="s in statuses"
-        :key="s.value"
-        :class="[
-          'px-3 py-1.5 text-xs rounded-md transition-colors font-medium',
-          filterStatus === s.value
-            ? 'bg-slate-800 text-white'
-            : 'text-slate-500 hover:text-slate-700',
-        ]"
-        @click="filterStatus = s.value"
-      >
-        {{ s.label }}
-        <span
-          v-if="s.value !== 'all'"
-          class="ml-1 font-mono"
+    <!-- Filter tabs — scrollable on mobile -->
+    <div class="mb-4 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+      <div class="flex gap-1 bg-white border border-slate-200 rounded-lg p-1 w-fit min-w-max">
+        <button
+          v-for="s in statuses"
+          :key="s.value"
+          :class="[
+            'px-3 py-1.5 text-xs rounded-md transition-colors font-medium whitespace-nowrap',
+            filterStatus === s.value
+              ? 'bg-slate-800 text-white'
+              : 'text-slate-500 hover:text-slate-700',
+          ]"
+          @click="filterStatus = s.value"
         >
-          ({{ stats[s.value as JobStatus] ?? 0 }})
-        </span>
-      </button>
+          {{ s.label }}
+          <span v-if="s.value !== 'all'" class="ml-1 font-mono">
+            ({{ stats[s.value as JobStatus] ?? 0 }})
+          </span>
+        </button>
+      </div>
     </div>
 
     <LoadingState v-if="loading && jobs.length === 0" />

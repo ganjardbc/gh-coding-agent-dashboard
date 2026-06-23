@@ -53,7 +53,7 @@ function startOver() {
 </script>
 
 <template>
-  <div class="p-6 max-w-2xl">
+  <div class="p-4 sm:p-6">
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-xl font-semibold text-slate-800">New Task</h1>
