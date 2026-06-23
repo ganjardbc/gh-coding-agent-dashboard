@@ -8,20 +8,36 @@ import type { JobStatus } from '@/types/job'
 
 const { jobs, loading, error, fetch, stats, hasActiveJobs } = useJobs()
 
-const filterStatus = ref<JobStatus | 'all'>('all')
+type FilterValue = JobStatus | 'all' | 'github' | 'webhook'
 
-const statuses: Array<{ value: JobStatus | 'all'; label: string }> = [
+const filterStatus = ref<FilterValue>('all')
+
+const statuses: Array<{ value: FilterValue; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'queued', label: 'Queued' },
   { value: 'running', label: 'Running' },
   { value: 'success', label: 'Done' },
   { value: 'failed', label: 'Failed' },
+  { value: 'github', label: 'GitHub' },
+  { value: 'webhook', label: 'Webhook' },
 ]
+
+const githubCount = computed(() => jobs.value.filter((j) => !!j.github).length)
+const webhookCount = computed(() => jobs.value.filter((j) => j.source?.type === 'github-webhook').length)
 
 const filteredJobs = computed(() => {
   if (filterStatus.value === 'all') return jobs.value
+  if (filterStatus.value === 'github') return jobs.value.filter((j) => !!j.github)
+  if (filterStatus.value === 'webhook') return jobs.value.filter((j) => j.source?.type === 'github-webhook')
   return jobs.value.filter((j) => j.status === filterStatus.value)
 })
+
+function filterCount(value: FilterValue): number | null {
+  if (value === 'all') return null
+  if (value === 'github') return githubCount.value
+  if (value === 'webhook') return webhookCount.value
+  return stats.value[value as JobStatus] ?? 0
+}
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
@@ -49,6 +65,7 @@ onUnmounted(() => {
         <h1 class="text-xl font-semibold text-slate-800">Jobs</h1>
         <p class="text-xs text-slate-500 mt-0.5">
           {{ stats.total }} total · {{ stats.running }} running
+          <span v-if="githubCount > 0" class="text-violet-500"> · {{ githubCount }} GitHub-linked</span>
           <span v-if="hasActiveJobs" class="text-amber-500"> · auto-refreshing</span>
         </p>
       </div>
@@ -69,14 +86,16 @@ onUnmounted(() => {
           :class="[
             'px-3 py-1.5 text-xs rounded-md transition-colors font-medium whitespace-nowrap',
             filterStatus === s.value
-              ? 'bg-slate-800 text-white'
+              ? s.value === 'github' || s.value === 'webhook'
+                ? 'bg-violet-700 text-white'
+                : 'bg-slate-800 text-white'
               : 'text-slate-500 hover:text-slate-700',
           ]"
           @click="filterStatus = s.value"
         >
           {{ s.label }}
-          <span v-if="s.value !== 'all'" class="ml-1 font-mono">
-            ({{ stats[s.value as JobStatus] ?? 0 }})
+          <span v-if="filterCount(s.value) !== null" class="ml-1 font-mono">
+            ({{ filterCount(s.value) }})
           </span>
         </button>
       </div>

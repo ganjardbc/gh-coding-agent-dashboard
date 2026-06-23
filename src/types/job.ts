@@ -15,6 +15,9 @@ export interface JobSummary {
   startedAt: string | null
   finishedAt: string | null
   error: string | null
+  github?: import('./github').GitHubJobContext
+  source?: import('./github').JobSource
+  githubFeedback?: import('./github').GitHubFeedback
 }
 
 export interface CommandResult {
