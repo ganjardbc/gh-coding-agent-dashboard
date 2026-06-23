@@ -2,9 +2,12 @@
 import { onMounted, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
+import SourceBadge from '@/components/shared/SourceBadge.vue'
 import LoadingState from '@/components/shared/LoadingState.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 import RunViewer from '@/components/runs/RunViewer.vue'
+import GitHubContextPanel from '@/components/jobs/GitHubContextPanel.vue'
+import GitHubFeedbackPanel from '@/components/jobs/GitHubFeedbackPanel.vue'
 import { useJobDetail } from '@/composables/useJobs'
 import type { RunData } from '@/types/run'
 import type { JobDetail } from '@/types/job'
@@ -22,14 +25,21 @@ function fmtTime(ts: string | null | undefined) {
 
 function replayJob() {
   if (!job.value) return
-  router.push({
-    path: '/new-task',
-    query: {
-      repo: job.value.input.repo,
-      task: job.value.input.task,
-      validate: String(job.value.input.validate),
-    },
-  })
+  const query: Record<string, string> = {
+    repo: job.value.input.repo,
+    task: job.value.input.task,
+    validate: String(job.value.input.validate),
+  }
+  const gh = job.value.github
+  if (gh) {
+    query.ghOwner = gh.owner
+    query.ghRepo = gh.repo
+    if (gh.branch) query.ghBranch = gh.branch
+    if (gh.baseBranch) query.ghBaseBranch = gh.baseBranch
+    if (gh.issueNumber != null) query.ghIssueNumber = String(gh.issueNumber)
+    if (gh.prNumber != null) query.ghPrNumber = String(gh.prNumber)
+  }
+  router.push({ path: '/new-task', query })
 }
 
 watch(job, (j) => {
@@ -60,6 +70,7 @@ function asRunData(j: JobDetail): RunData {
       <span class="text-slate-300">/</span>
       <span class="font-mono text-xs text-slate-500 break-all">{{ runId }}</span>
       <StatusBadge v-if="job" :status="job.status" />
+      <SourceBadge v-if="job?.source" :type="job.source.type" />
     </div>
 
     <LoadingState v-if="loading && !job" />
@@ -87,6 +98,16 @@ function asRunData(j: JobDetail): RunData {
             ↺ Replay
           </button>
         </div>
+      </div>
+
+      <!-- GitHub context -->
+      <div v-if="job.github" class="mb-4">
+        <GitHubContextPanel :github="job.github" :source="job.source" />
+      </div>
+
+      <!-- GitHub feedback -->
+      <div v-if="job.githubFeedback" class="mb-4">
+        <GitHubFeedbackPanel :feedback="job.githubFeedback" />
       </div>
 
       <!-- Linked run file -->

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
+import SourceBadge from '@/components/shared/SourceBadge.vue'
 import type { JobSummary, JobStatus } from '@/types/job'
 
 defineProps<{
   jobs: JobSummary[]
-  filterStatus: JobStatus | 'all'
+  filterStatus: JobStatus | 'all' | 'github' | 'webhook'
 }>()
 
 function fmtTime(ts: string | null) {
@@ -42,6 +43,7 @@ function duration(job: JobSummary): string {
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">ID</th>
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">Repo</th>
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">Task</th>
+              <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">GitHub</th>
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">Status</th>
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">Created</th>
               <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-500 tracking-wider">Duration</th>
@@ -68,6 +70,26 @@ function duration(job: JobSummary): string {
                 <span class="text-xs text-slate-600 block truncate" :title="job.input.task">
                   {{ job.input.task }}
                 </span>
+              </td>
+              <td class="px-4 py-3">
+                <div v-if="job.github" class="flex flex-col gap-0.5 min-w-[120px]">
+                  <span class="font-mono text-xs text-slate-700 font-medium truncate max-w-[160px]" :title="`${job.github.owner}/${job.github.repo}`">
+                    {{ job.github.owner }}/{{ job.github.repo }}
+                  </span>
+                  <div class="flex items-center gap-1 flex-wrap">
+                    <span v-if="job.github.branch" class="font-mono text-xs text-slate-400 truncate max-w-[100px]" :title="job.github.branch">
+                      {{ job.github.branch }}
+                    </span>
+                    <span v-if="job.github.issueNumber" class="bg-blue-50 text-blue-600 text-xs px-1 py-0 rounded font-mono">
+                      #{{ job.github.issueNumber }}
+                    </span>
+                    <span v-if="job.github.prNumber" class="bg-violet-50 text-violet-600 text-xs px-1 py-0 rounded font-mono">
+                      PR#{{ job.github.prNumber }}
+                    </span>
+                  </div>
+                  <SourceBadge v-if="job.source" :type="job.source.type" />
+                </div>
+                <span v-else class="text-xs text-slate-300">—</span>
               </td>
               <td class="px-4 py-3">
                 <StatusBadge :status="job.status" />
@@ -106,9 +128,18 @@ function duration(job: JobSummary): string {
               </span>
               <span class="font-mono text-xs text-slate-400 truncate">{{ job.id.slice(-8) }}</span>
             </div>
-            <StatusBadge :status="job.status" />
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <SourceBadge v-if="job.source" :type="job.source.type" />
+              <StatusBadge :status="job.status" />
+            </div>
           </div>
           <p class="text-xs text-slate-600 line-clamp-2 mb-1.5 leading-relaxed">{{ job.input.task }}</p>
+          <div v-if="job.github" class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <span class="font-mono text-xs text-slate-500">{{ job.github.owner }}/{{ job.github.repo }}</span>
+            <span v-if="job.github.branch" class="font-mono text-xs text-slate-400">{{ job.github.branch }}</span>
+            <span v-if="job.github.issueNumber" class="bg-blue-50 text-blue-600 text-xs px-1 rounded font-mono">#{{ job.github.issueNumber }}</span>
+            <span v-if="job.github.prNumber" class="bg-violet-50 text-violet-600 text-xs px-1 rounded font-mono">PR#{{ job.github.prNumber }}</span>
+          </div>
           <div class="flex items-center gap-3 text-xs text-slate-400 font-mono">
             <span>{{ fmtTimeShort(job.createdAt) }}</span>
             <span v-if="job.startedAt && job.finishedAt">· {{ duration(job) }}</span>

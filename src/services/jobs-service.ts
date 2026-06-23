@@ -1,5 +1,6 @@
 import { apiGet, apiPost } from './api-client'
 import type { JobSummary, JobDetail, CreateJobResult } from '@/types/job'
+import type { GitHubJobContext } from '@/types/github'
 
 interface JobsResponse {
   success: boolean
@@ -30,12 +31,16 @@ export async function getJobById(id: string): Promise<JobDetail> {
   return res.job
 }
 
-export async function createJob(repo: string, task: string): Promise<CreateJobResult> {
-  const res = await apiPost<CreateJobResponse>('/run', { repo, task })
+export async function createJob(repo: string, task: string, github?: GitHubJobContext): Promise<CreateJobResult> {
+  const body: Record<string, unknown> = { repo, task }
+  if (github) body.github = github
+  const res = await apiPost<CreateJobResponse>('/run', body)
   return { runId: res.runId, jobId: res.jobId, status: res.status, queuedAt: res.queuedAt }
 }
 
-export async function validateTask(repo: string, task: string): Promise<CreateJobResult> {
-  const res = await apiPost<CreateJobResponse>('/validate', { repo, task })
+export async function validateTask(repo: string, task: string, github?: GitHubJobContext): Promise<CreateJobResult> {
+  const body: Record<string, unknown> = { repo, task }
+  if (github) body.github = github
+  const res = await apiPost<CreateJobResponse>('/validate', body)
   return { runId: res.runId, jobId: res.jobId, status: res.status, queuedAt: res.queuedAt }
 }

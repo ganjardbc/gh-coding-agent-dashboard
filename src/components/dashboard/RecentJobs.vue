@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
+import SourceBadge from '@/components/shared/SourceBadge.vue'
 import type { JobSummary } from '@/types/job'
 
 defineProps<{ jobs: JobSummary[] }>()
@@ -48,7 +49,15 @@ function fmtTimeShort(ts: string | null) {
                 <span class="text-slate-600 text-xs truncate block">{{ job.input.task }}</span>
               </td>
               <td class="px-3 py-3">
-                <StatusBadge :status="job.status" />
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <StatusBadge :status="job.status" />
+                  <SourceBadge v-if="job.source" :type="job.source.type" />
+                  <span
+                    v-if="job.github"
+                    class="font-mono text-xs text-violet-600 truncate max-w-[120px]"
+                    :title="`${job.github.owner}/${job.github.repo}`"
+                  >{{ job.github.owner }}/{{ job.github.repo }}</span>
+                </div>
               </td>
               <td class="px-3 py-3 text-xs text-slate-400 font-mono whitespace-nowrap">
                 {{ fmtTime(job.createdAt) }}
@@ -73,10 +82,18 @@ function fmtTimeShort(ts: string | null) {
               </span>
               <span class="font-mono text-xs text-slate-400">{{ job.id.slice(-6) }}</span>
             </div>
-            <StatusBadge :status="job.status" />
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <SourceBadge v-if="job.source" :type="job.source.type" />
+              <StatusBadge :status="job.status" />
+            </div>
           </div>
           <p class="text-xs text-slate-600 truncate mb-1">{{ job.input.task }}</p>
-          <span class="text-xs text-slate-400 font-mono">{{ fmtTimeShort(job.createdAt) }}</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-slate-400 font-mono">{{ fmtTimeShort(job.createdAt) }}</span>
+            <span v-if="job.github" class="font-mono text-xs text-violet-500">
+              {{ job.github.owner }}/{{ job.github.repo }}
+            </span>
+          </div>
         </RouterLink>
       </div>
     </template>
