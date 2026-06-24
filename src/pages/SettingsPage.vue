@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { getSettings, updateSetting } from '@/services/settings-service'
+import { getSettings, updateSetting, testLLMConnection } from '@/services/settings-service'
 import LoadingState from '@/components/shared/LoadingState.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 
@@ -16,6 +16,22 @@ const successMessage = ref<string | null>(null)
 const saveResults = ref<{ key: string; ok: boolean; message: string }[]>([])
 
 const showKeys = ref({ ROUTER_API_KEY: false, GITHUB_TOKEN: false, GITHUB_WEBHOOK_SECRET: false })
+
+const testingLLM = ref(false)
+const llmTestResult = ref<{ ok: boolean; latency?: number; model?: string; error?: string } | null>(null)
+
+async function runLLMTest() {
+  testingLLM.value = true
+  llmTestResult.value = null
+  try {
+    const result = await testLLMConnection()
+    llmTestResult.value = { ok: true, latency: result.latency, model: result.model }
+  } catch (err: any) {
+    llmTestResult.value = { ok: false, error: err.message || 'Connection failed' }
+  } finally {
+    testingLLM.value = false
+  }
+}
 
 async function fetchSettings() {
   loading.value = true
@@ -121,6 +137,24 @@ onMounted(fetchSettings)
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
           <Icon icon="lucide:cpu" class="w-4 h-4 text-slate-500" />
           <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">LLM Router Configuration</h2>
+          <div class="ml-auto flex items-center gap-2">
+            <transition name="fade">
+              <span v-if="llmTestResult" class="flex items-center gap-1 text-[10px] font-medium" :class="llmTestResult.ok ? 'text-green-600' : 'text-red-500'">
+                <Icon :icon="llmTestResult.ok ? 'lucide:check-circle' : 'lucide:x-circle'" class="w-3.5 h-3.5" />
+                <span v-if="llmTestResult.ok">Connected · {{ llmTestResult.latency }}ms · {{ llmTestResult.model }}</span>
+                <span v-else>{{ llmTestResult.error }}</span>
+              </span>
+            </transition>
+            <button
+              type="button"
+              :disabled="testingLLM"
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium border border-slate-200 rounded-md bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50 transition-colors shadow-sm"
+              @click="runLLMTest"
+            >
+              <Icon :icon="testingLLM ? 'lucide:loader-2' : 'lucide:zap'" class="w-3.5 h-3.5" :class="{ 'animate-spin': testingLLM }" />
+              {{ testingLLM ? 'Testing...' : 'Test Connection' }}
+            </button>
+          </div>
         </div>
         <div class="p-5 space-y-4">
           <div>
@@ -251,3 +285,8 @@ onMounted(fetchSettings)
     </form>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
