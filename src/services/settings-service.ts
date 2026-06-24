@@ -17,3 +17,7 @@ export async function updateSetting(key: string, value: string): Promise<{ succe
 export async function testLLMConnection(): Promise<{ connected: boolean; latency: number; model: string }> {
   return apiGet<{ success: boolean; connected: boolean; latency: number; model: string }>('/settings/test-llm')
 }
+
+export async function testGitHubConnection(): Promise<{ connected: boolean; latency: number; login: string; name: string }> {
+  return apiGet<{ success: boolean; connected: boolean; latency: number; login: string; name: string }>('/settings/test-github')
+}

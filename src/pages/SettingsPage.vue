@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
-import { getSettings, updateSetting, testLLMConnection } from '@/services/settings-service'
+import { getSettings, updateSetting, testLLMConnection, testGitHubConnection } from '@/services/settings-service'
 import LoadingState from '@/components/shared/LoadingState.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 
@@ -20,6 +20,9 @@ const showKeys = ref({ ROUTER_API_KEY: false, GITHUB_TOKEN: false, GITHUB_WEBHOO
 const testingLLM = ref(false)
 const llmTestResult = ref<{ ok: boolean; latency?: number; model?: string; error?: string } | null>(null)
 
+const testingGitHub = ref(false)
+const githubTestResult = ref<{ ok: boolean; latency?: number; login?: string; name?: string; error?: string } | null>(null)
+
 async function runLLMTest() {
   testingLLM.value = true
   llmTestResult.value = null
@@ -30,6 +33,19 @@ async function runLLMTest() {
     llmTestResult.value = { ok: false, error: err.message || 'Connection failed' }
   } finally {
     testingLLM.value = false
+  }
+}
+
+async function runGitHubTest() {
+  testingGitHub.value = true
+  githubTestResult.value = null
+  try {
+    const result = await testGitHubConnection()
+    githubTestResult.value = { ok: true, latency: result.latency, login: result.login, name: result.name }
+  } catch (err: any) {
+    githubTestResult.value = { ok: false, error: err.message || 'Connection failed' }
+  } finally {
+    testingGitHub.value = false
   }
 }
 
@@ -209,6 +225,24 @@ onMounted(fetchSettings)
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
           <Icon icon="lucide:github" class="w-4 h-4 text-slate-500" />
           <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">GitHub Integration</h2>
+          <div class="ml-auto flex items-center gap-2">
+            <transition name="fade">
+              <span v-if="githubTestResult" class="flex items-center gap-1 text-[10px] font-medium" :class="githubTestResult.ok ? 'text-green-600' : 'text-red-500'">
+                <Icon :icon="githubTestResult.ok ? 'lucide:check-circle' : 'lucide:x-circle'" class="w-3.5 h-3.5" />
+                <span v-if="githubTestResult.ok">Connected · {{ githubTestResult.latency }}ms · @{{ githubTestResult.login }}</span>
+                <span v-else>{{ githubTestResult.error }}</span>
+              </span>
+            </transition>
+            <button
+              type="button"
+              :disabled="testingGitHub"
+              class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium border border-slate-200 rounded-md bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50 transition-colors shadow-sm"
+              @click="runGitHubTest"
+            >
+              <Icon :icon="testingGitHub ? 'lucide:loader-2' : 'lucide:zap'" class="w-3.5 h-3.5" :class="{ 'animate-spin': testingGitHub }" />
+              {{ testingGitHub ? 'Testing...' : 'Test Connection' }}
+            </button>
+          </div>
         </div>
         <div class="p-5 space-y-4">
           <div>
