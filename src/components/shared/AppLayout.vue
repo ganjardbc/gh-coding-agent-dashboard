@@ -10,7 +10,7 @@ const navItems = [
   { to: '/', label: 'Overview', icon: 'lucide:layout-dashboard' },
   { to: '/new-task', label: 'New Task', icon: 'lucide:plus-circle' },
   { to: '/repositories', label: 'Repositories', icon: 'lucide:folder' },
-  { to: '/local-jobs', label: 'Local Runs', icon: 'lucide:play-circle' },
+  { to: '/jobs', label: 'Local Runs', icon: 'lucide:play-circle' },
   { to: '/github-jobs', label: 'GitHub Runs', icon: 'lucide:github' },
   { to: '/agents', label: 'Agents', icon: 'lucide:bot' },
   { to: '/flow-config', label: 'Flow Config', icon: 'lucide:sliders-horizontal' },

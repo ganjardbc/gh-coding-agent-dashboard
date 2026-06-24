@@ -17,7 +17,7 @@ export default createRouter({
     { path: '/', component: DashboardPage },
     { path: '/new-task', component: NewTaskPage },
     { path: '/repositories', component: RepositoriesPage },
-    { path: '/local-jobs', component: JobsPage },
+    { path: '/jobs', component: JobsPage },
     { path: '/github-jobs', component: GitHubJobsPage },
     { path: '/jobs/:id', component: JobDetailPage },
     { path: '/runs', component: RunsPage },

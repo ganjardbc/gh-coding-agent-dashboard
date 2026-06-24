@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import SourceBadge from '@/components/shared/SourceBadge.vue'
@@ -65,9 +65,9 @@ function asRunData(j: JobDetail): RunData {
   <div class="p-4 sm:p-6">
     <!-- Breadcrumb -->
     <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-5">
-      <RouterLink to="/jobs" class="text-slate-400 hover:text-slate-600 text-sm transition-colors flex-shrink-0 flex items-center gap-1">
+      <button @click="router.back()" class="text-slate-400 hover:text-slate-600 text-sm transition-colors flex-shrink-0 flex items-center gap-1">
         <Icon icon="lucide:arrow-left" class="w-3.5 h-3.5" /> Jobs
-      </RouterLink>
+      </button>
       <span class="text-slate-300">/</span>
       <span class="font-mono text-xs text-slate-500 break-all">{{ runId }}</span>
       <StatusBadge v-if="job" :status="job.status" />
