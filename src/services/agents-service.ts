@@ -9,6 +9,10 @@ export interface AgentMetadata {
   modelType: string
   capabilities: string[]
   icon: string
+  toggleKey?: string
+  toggleTag?: string
+  toggleImpact?: string
+  required?: boolean
 }
 
 export interface AgentsResponse {

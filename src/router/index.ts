@@ -9,6 +9,7 @@ import RunsPage from '@/pages/RunsPage.vue'
 import RunDetailPage from '@/pages/RunDetailPage.vue'
 import SettingsPage from '@/pages/SettingsPage.vue'
 import AgentsPage from '@/pages/AgentsPage.vue'
+import FlowConfigPage from '@/pages/FlowConfigPage.vue'
 
 export default createRouter({
   history: createWebHistory(),
@@ -16,13 +17,14 @@ export default createRouter({
     { path: '/', component: DashboardPage },
     { path: '/new-task', component: NewTaskPage },
     { path: '/repositories', component: RepositoriesPage },
-    { path: '/jobs', component: JobsPage },
+    { path: '/local-jobs', component: JobsPage },
     { path: '/github-jobs', component: GitHubJobsPage },
     { path: '/jobs/:id', component: JobDetailPage },
     { path: '/runs', component: RunsPage },
     { path: '/runs/:file', component: RunDetailPage },
     { path: '/settings', component: SettingsPage },
     { path: '/agents', component: AgentsPage },
+    { path: '/flow-config', component: FlowConfigPage },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })
