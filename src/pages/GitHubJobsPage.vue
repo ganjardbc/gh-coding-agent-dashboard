@@ -6,46 +6,58 @@ import JobsTable from '@/components/jobs/JobsTable.vue'
 import LoadingState from '@/components/shared/LoadingState.vue'
 import ErrorState from '@/components/shared/ErrorState.vue'
 import { useJobs } from '@/composables/useJobs'
-import type { JobStatus } from '@/types/job'
 
 const route = useRoute()
 const router = useRouter()
-const { jobs, loading, error, fetch, stats, hasActiveJobs } = useJobs()
+const { jobs, loading, error, fetch, hasActiveJobs } = useJobs()
 
-type FilterValue = JobStatus | 'all'
+type FilterValue = 'all' | 'webhook' | 'manual'
 
-const filterStatus = ref<FilterValue>((route.query.status as FilterValue) || 'all')
+const filterValue = ref<FilterValue>((route.query.filter as FilterValue) || 'all')
 
 // Sync ref update to URL query parameter
-watch(filterStatus, (newVal) => {
-  router.replace({ query: { ...route.query, status: newVal } })
+watch(filterValue, (newVal) => {
+  router.replace({ query: { ...route.query, filter: newVal } })
 })
 
 // Sync URL query parameter changes back to ref (e.g. Back button)
-watch(() => route.query.status, (newVal) => {
-  if (newVal && ['all', 'pending', 'queued', 'running', 'success', 'failed'].includes(newVal as string)) {
-    filterStatus.value = newVal as FilterValue
+watch(() => route.query.filter, (newVal) => {
+  if (newVal && ['all', 'webhook', 'manual'].includes(newVal as string)) {
+    filterValue.value = newVal as FilterValue
   } else {
-    filterStatus.value = 'all'
+    filterValue.value = 'all'
   }
 })
 
-const statuses: Array<{ value: FilterValue; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'queued', label: 'Queued' },
-  { value: 'running', label: 'Running' },
-  { value: 'success', label: 'Done' },
-  { value: 'failed', label: 'Failed' },
+const tabs: Array<{ value: FilterValue; label: string }> = [
+  { value: 'all', label: 'All GitHub Runs' },
+  { value: 'webhook', label: 'Webhook Triggers' },
+  { value: 'manual', label: 'Manual GitHub Runs' },
 ]
 
+// Only select jobs that are GitHub-linked
+const githubJobs = computed(() => jobs.value.filter((j) => !!j.github))
+
 const filteredJobs = computed(() => {
-  if (filterStatus.value === 'all') return jobs.value
-  return jobs.value.filter((j) => j.status === filterStatus.value)
+  if (filterValue.value === 'all') return githubJobs.value
+  if (filterValue.value === 'webhook') {
+    return githubJobs.value.filter((j) => j.source?.type === 'github-webhook')
+  }
+  if (filterValue.value === 'manual') {
+    return githubJobs.value.filter((j) => j.source?.type !== 'github-webhook')
+  }
+  return githubJobs.value
 })
 
-function filterCount(value: FilterValue): number | null {
-  if (value === 'all') return null
-  return stats.value[value as JobStatus] ?? 0
+const stats = computed(() => {
+  const all = githubJobs.value.length
+  const webhook = githubJobs.value.filter((j) => j.source?.type === 'github-webhook').length
+  const manual = all - webhook
+  return { all, webhook, manual }
+})
+
+function getCount(tabValue: FilterValue): number {
+  return stats.value[tabValue]
 }
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -71,9 +83,11 @@ onUnmounted(() => {
     <!-- Header -->
     <div class="flex items-center justify-between mb-4 gap-2">
       <div>
-        <h1 class="text-xl font-semibold text-slate-800">Local Runs</h1>
+        <h1 class="text-xl font-semibold text-slate-800 flex items-center gap-2">
+          GitHub Runs
+        </h1>
         <p class="text-xs text-slate-500 mt-0.5">
-          {{ stats.total }} total · {{ stats.running }} running
+          {{ stats.all }} total GitHub jobs · {{ stats.webhook }} via Webhooks · {{ stats.manual }} manual
           <span v-if="hasActiveJobs" class="text-amber-500"> · auto-refreshing</span>
         </p>
       </div>
@@ -90,26 +104,24 @@ onUnmounted(() => {
     <div class="mb-4 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
       <div class="flex gap-1 bg-white border border-slate-200 rounded-lg p-1 w-fit min-w-max">
         <button
-          v-for="s in statuses"
-          :key="s.value"
+          v-for="tab in tabs"
+          :key="tab.value"
           :class="[
             'px-3 py-1.5 text-xs rounded-md transition-colors font-medium whitespace-nowrap',
-            filterStatus === s.value
+            filterValue === tab.value
               ? 'bg-slate-800 text-white shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
           ]"
-          @click="filterStatus = s.value"
+          @click="filterValue = tab.value"
         >
-          {{ s.label }}
-          <span v-if="filterCount(s.value) !== null" class="ml-1 font-mono">
-            ({{ filterCount(s.value) }})
-          </span>
+          {{ tab.label }}
+          <span class="ml-1 font-mono">({{ getCount(tab.value) }})</span>
         </button>
       </div>
     </div>
 
     <LoadingState v-if="loading && jobs.length === 0" />
     <ErrorState v-else-if="error" :message="error" @retry="fetch" />
-    <JobsTable v-else :jobs="filteredJobs" :filter-status="filterStatus" />
+    <JobsTable v-else :jobs="filteredJobs" filter-status="github" />
   </div>
 </template>

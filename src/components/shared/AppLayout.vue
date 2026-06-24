@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { Icon } from '@iconify/vue'
 
 const route = useRoute()
 const sidebarOpen = ref(false)
 
 const navItems = [
-  { to: '/', label: 'Overview', icon: '◈' },
-  { to: '/new-task', label: 'New Task', icon: '＋' },
-  { to: '/jobs', label: 'Jobs', icon: '⚙' },
-  { to: '/runs', label: 'Runs', icon: '📄' },
+  { to: '/', label: 'Overview', icon: 'lucide:layout-dashboard' },
+  { to: '/new-task', label: 'New Task', icon: 'lucide:plus-circle' },
+  { to: '/repositories', label: 'Repositories', icon: 'lucide:folder' },
+  { to: '/jobs', label: 'Local Runs', icon: 'lucide:play-circle' },
+  { to: '/github-jobs', label: 'GitHub Runs', icon: 'lucide:github' },
+  { to: '/runs', label: 'Runs', icon: 'lucide:file-text' },
+  { to: '/agents', label: 'Agents', icon: 'lucide:bot' },
+  { to: '/settings', label: 'Settings', icon: 'lucide:wrench' },
 ]
 
 function isActive(to: string) {
@@ -45,11 +50,11 @@ watch(() => route.path, () => { sidebarOpen.value = false })
           <div class="text-slate-400 text-xs mt-0.5 font-mono">Operator Dashboard</div>
         </div>
         <button
-          class="md:hidden text-slate-400 hover:text-slate-200 p-1 rounded"
+          class="md:hidden text-slate-400 hover:text-slate-200 p-1 rounded flex items-center justify-center"
           aria-label="Close menu"
           @click="sidebarOpen = false"
         >
-          ✕
+          <Icon icon="lucide:x" class="w-5 h-5" />
         </button>
       </div>
 
@@ -65,13 +70,13 @@ watch(() => route.path, () => { sidebarOpen.value = false })
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800',
           ]"
         >
-          <span class="text-xs w-4 text-center leading-none">{{ item.icon }}</span>
+          <Icon :icon="item.icon" class="w-4 h-4 text-center leading-none flex-shrink-0" />
           {{ item.label }}
         </RouterLink>
       </nav>
 
       <div class="px-4 py-3 border-t border-slate-700/50">
-        <div class="text-slate-600 text-xs font-mono">v1.0.0</div>
+        <div class="text-slate-600 text-xs font-mono text-center">v1.0.0</div>
       </div>
     </aside>
 
@@ -80,15 +85,11 @@ watch(() => route.path, () => { sidebarOpen.value = false })
       <!-- Mobile top bar -->
       <header class="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200 flex-shrink-0">
         <button
-          class="text-slate-600 hover:text-slate-800 p-1 rounded"
+          class="text-slate-600 hover:text-slate-800 p-1.5 rounded flex items-center justify-center"
           aria-label="Open menu"
           @click="sidebarOpen = true"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect x="2" y="5" width="16" height="1.5" rx="0.75" fill="currentColor"/>
-            <rect x="2" y="9.25" width="16" height="1.5" rx="0.75" fill="currentColor"/>
-            <rect x="2" y="13.5" width="16" height="1.5" rx="0.75" fill="currentColor"/>
-          </svg>
+          <Icon icon="lucide:menu" class="w-5 h-5" />
         </button>
         <span class="text-sm font-semibold text-slate-800">GH Coding Agent</span>
       </header>

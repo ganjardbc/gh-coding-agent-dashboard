@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HealthStatus, QueueHealth } from '@/types/health'
+import { Icon } from '@iconify/vue'
 
 defineProps<{
   health: HealthStatus | null
@@ -15,10 +16,11 @@ defineProps<{
     <div class="flex flex-wrap gap-4">
       <!-- API health -->
       <div class="flex items-center gap-2">
-        <span
+        <Icon
+          :icon="healthError ? 'lucide:alert-circle' : health?.ok ? 'lucide:check-circle-2' : 'lucide:help-circle'"
           :class="[
-            'w-2 h-2 rounded-full',
-            healthError ? 'bg-red-500' : health?.ok ? 'bg-green-500' : 'bg-slate-300',
+            'w-4 h-4 flex-shrink-0',
+            healthError ? 'text-red-500' : health?.ok ? 'text-green-500' : 'text-slate-300',
           ]"
         />
         <span class="text-sm text-slate-700">API</span>
@@ -31,10 +33,11 @@ defineProps<{
 
       <!-- Queue health -->
       <div class="flex items-center gap-2">
-        <span
+        <Icon
+          :icon="queueError ? 'lucide:alert-circle' : queueHealth ? 'lucide:check-circle-2' : 'lucide:help-circle'"
           :class="[
-            'w-2 h-2 rounded-full',
-            queueError ? 'bg-red-500' : queueHealth ? 'bg-green-500' : 'bg-slate-300',
+            'w-4 h-4 flex-shrink-0',
+            queueError ? 'text-red-500' : queueHealth ? 'text-green-500' : 'text-slate-300',
           ]"
         />
         <span class="text-sm text-slate-700">Queue</span>

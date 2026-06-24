@@ -2,6 +2,7 @@
 import { RouterLink } from 'vue-router'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
 import SourceBadge from '@/components/shared/SourceBadge.vue'
+import EmptyState from '@/components/shared/EmptyState.vue'
 import type { JobSummary, JobStatus } from '@/types/job'
 
 defineProps<{
@@ -30,9 +31,12 @@ function duration(job: JobSummary): string {
 
 <template>
   <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-    <div v-if="jobs.length === 0" class="px-5 py-10 text-center text-sm text-slate-400">
-      No jobs match this filter
-    </div>
+    <EmptyState
+      v-if="jobs.length === 0"
+      icon="lucide:play"
+      title="No jobs found"
+      description="No jobs match the current filter selection. Adjust your filters or submit a new task."
+    />
 
     <template v-else>
       <!-- Desktop table -->

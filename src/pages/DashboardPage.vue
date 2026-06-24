@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { Icon } from '@iconify/vue'
 import StatsCard from '@/components/dashboard/StatsCard.vue'
 import HealthStatus from '@/components/dashboard/HealthStatus.vue'
 import RecentJobs from '@/components/dashboard/RecentJobs.vue'
@@ -34,13 +35,24 @@ onMounted(refresh)
         class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 transition-colors"
         @click="refresh"
       >
-        ↻ Refresh
+        <Icon icon="lucide:refresh-cw" class="w-3.5 h-3.5" />
+        Refresh
       </button>
     </div>
 
     <LoadingState v-if="jobsLoading && jobs.length === 0" />
 
     <template v-else>
+      <!-- Health -->
+      <div class="mb-4">
+        <HealthStatus
+          :health="health"
+          :queue-health="queueHealth"
+          :health-error="healthError"
+          :queue-error="queueError"
+        />
+      </div>
+
       <!-- Core stats row -->
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
         <StatsCard label="Total" :value="stats.total" />
@@ -57,25 +69,15 @@ onMounted(refresh)
             <div class="text-2xl font-bold font-mono text-violet-600">{{ githubLinkedCount }}</div>
             <div class="text-xs text-slate-500 mt-0.5">GitHub-linked jobs</div>
           </div>
-          <RouterLink to="/jobs?filter=github" class="text-xs text-violet-600 hover:text-violet-800">View →</RouterLink>
+          <RouterLink to="/github-jobs?filter=all" class="text-xs text-violet-600 hover:text-violet-800">View →</RouterLink>
         </div>
         <div class="bg-white border border-slate-200 rounded-lg px-4 py-3 flex items-center justify-between">
           <div>
             <div class="text-2xl font-bold font-mono text-violet-500">{{ webhookCount }}</div>
             <div class="text-xs text-slate-500 mt-0.5">Webhook-triggered</div>
           </div>
-          <RouterLink to="/jobs?filter=webhook" class="text-xs text-violet-600 hover:text-violet-800">View →</RouterLink>
+          <RouterLink to="/github-jobs?filter=webhook" class="text-xs text-violet-600 hover:text-violet-800">View →</RouterLink>
         </div>
-      </div>
-
-      <!-- Health -->
-      <div class="mb-4">
-        <HealthStatus
-          :health="health"
-          :queue-health="queueHealth"
-          :health-error="healthError"
-          :queue-error="queueError"
-        />
       </div>
 
       <!-- Recent GitHub jobs -->
@@ -83,7 +85,7 @@ onMounted(refresh)
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
             <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Recent GitHub Jobs</span>
-            <RouterLink to="/jobs" class="text-xs text-blue-600 hover:text-blue-800">View all →</RouterLink>
+            <RouterLink to="/github-jobs" class="text-xs text-blue-600 hover:text-blue-800">View all →</RouterLink>
           </div>
           <div class="divide-y divide-slate-100">
             <RouterLink
