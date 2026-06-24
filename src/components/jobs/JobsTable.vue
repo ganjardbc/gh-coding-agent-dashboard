@@ -7,7 +7,7 @@ import type { JobSummary, JobStatus } from '@/types/job'
 
 defineProps<{
   jobs: JobSummary[]
-  filterStatus: JobStatus | 'all' | 'github' | 'webhook'
+  filterStatus: JobStatus | 'all'
 }>()
 
 function fmtTime(ts: string | null) {

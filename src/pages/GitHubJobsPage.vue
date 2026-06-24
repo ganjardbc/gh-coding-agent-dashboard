@@ -122,6 +122,6 @@ onUnmounted(() => {
 
     <LoadingState v-if="loading && jobs.length === 0" />
     <ErrorState v-else-if="error" :message="error" @retry="fetch" />
-    <JobsTable v-else :jobs="filteredJobs" filter-status="github" />
+    <JobsTable v-else :jobs="filteredJobs" filter-status="all" />
   </div>
 </template>

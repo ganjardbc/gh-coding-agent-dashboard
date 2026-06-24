@@ -71,3 +71,11 @@ export interface CreateJobResult {
   status: string
   queuedAt: string
 }
+
+export interface RetryJobResult {
+  runId: string
+  jobId: string
+  originalRunId: string
+  status: string
+  queuedAt: string
+}
