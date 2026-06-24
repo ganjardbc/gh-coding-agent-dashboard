@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import StatusBadge from '@/components/shared/StatusBadge.vue'
@@ -10,6 +10,7 @@ import RunViewer from '@/components/runs/RunViewer.vue'
 import GitHubContextPanel from '@/components/jobs/GitHubContextPanel.vue'
 import GitHubFeedbackPanel from '@/components/jobs/GitHubFeedbackPanel.vue'
 import { useJobDetail } from '@/composables/useJobs'
+import { retryJob } from '@/services/jobs-service'
 import type { RunData } from '@/types/run'
 import type { JobDetail } from '@/types/job'
 
@@ -18,6 +19,9 @@ const router = useRouter()
 const runId = String(route.params.id)
 
 const { job, loading, error, fetchJob, startPolling } = useJobDetail()
+
+const retrying = ref(false)
+const retryError = ref<string | null>(null)
 
 function fmtTime(ts: string | null | undefined) {
   if (!ts) return '—'
@@ -41,6 +45,20 @@ function replayJob() {
     if (gh.prNumber != null) query.ghPrNumber = String(gh.prNumber)
   }
   router.push({ path: '/new-task', query })
+}
+
+async function handleRetry() {
+  if (!job.value || job.value.status !== 'failed') return
+  retrying.value = true
+  retryError.value = null
+  try {
+    const result = await retryJob(runId)
+    router.push(`/jobs/${result.runId}`)
+  } catch (e) {
+    retryError.value = String(e)
+  } finally {
+    retrying.value = false
+  }
 }
 
 watch(job, (j) => {
@@ -85,12 +103,26 @@ function asRunData(j: JobDetail): RunData {
           <span v-if="job.retryCount" class="ml-2 text-amber-600">· {{ job.retryCount }} retries</span>
           <span v-if="job.status === 'queued' || job.status === 'running'" class="ml-2 text-amber-500">· polling…</span>
         </div>
-        <div class="flex gap-2 flex-shrink-0">
+        <div class="flex gap-2 flex-shrink-0 flex-wrap">
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md hover:bg-slate-50 text-slate-600 transition-colors"
             @click="fetchJob(runId)"
           >
             <Icon icon="lucide:refresh-cw" class="w-3.5 h-3.5" /> Refresh
+          </button>
+          <!-- Retry — only for failed jobs -->
+          <button
+            v-if="job.status === 'failed'"
+            :disabled="retrying"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded-md transition-colors font-medium"
+            @click="handleRetry"
+          >
+            <Icon
+              :icon="retrying ? 'lucide:loader-2' : 'lucide:play'"
+              class="w-3.5 h-3.5"
+              :class="{ 'animate-spin': retrying }"
+            />
+            {{ retrying ? 'Retrying…' : 'Retry' }}
           </button>
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-900 text-white rounded-md transition-colors"
@@ -99,6 +131,12 @@ function asRunData(j: JobDetail): RunData {
             <Icon icon="lucide:rotate-ccw" class="w-3.5 h-3.5" /> Replay
           </button>
         </div>
+      </div>
+
+      <!-- Retry error -->
+      <div v-if="retryError" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 flex items-center gap-2">
+        <Icon icon="lucide:alert-circle" class="w-4 h-4 flex-shrink-0" />
+        {{ retryError }}
       </div>
 
       <!-- GitHub context -->

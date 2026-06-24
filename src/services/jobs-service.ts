@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from './api-client'
-import type { JobSummary, JobDetail, CreateJobResult } from '@/types/job'
+import type { JobSummary, JobDetail, CreateJobResult, RetryJobResult } from '@/types/job'
 import type { GitHubJobContext } from '@/types/github'
 
 interface JobsResponse {
@@ -43,4 +43,24 @@ export async function validateTask(repo: string, task: string, github?: GitHubJo
   if (github) body.github = github
   const res = await apiPost<CreateJobResponse>('/validate', body)
   return { runId: res.runId, jobId: res.jobId, status: res.status, queuedAt: res.queuedAt }
+}
+
+interface RetryJobResponse {
+  success: boolean
+  runId: string
+  jobId: string
+  originalRunId: string
+  status: string
+  queuedAt: string
+}
+
+export async function retryJob(id: string): Promise<RetryJobResult> {
+  const res = await apiPost<RetryJobResponse>(`/jobs/${id}/retry`, {})
+  return {
+    runId: res.runId,
+    jobId: res.jobId,
+    originalRunId: res.originalRunId,
+    status: res.status,
+    queuedAt: res.queuedAt,
+  }
 }
